@@ -172,7 +172,7 @@ async def posts_by_tag(
     return templates.TemplateResponse(
         "tag.html",
         {
-            "request": request,
+             "request": request,
             "tag_name": tag_name,
             "posts": posts_list,
             "total_posts": total_posts,
