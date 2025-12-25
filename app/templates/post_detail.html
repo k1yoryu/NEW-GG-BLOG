@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% macro moscow_time(dt) %}
+    {% if dt %}
+        {% set hour = dt.hour + 3 %}
+        {% if hour >= 24 %}
+            {% set hour = hour - 24 %}
+        {% endif %}
+        {{ dt.strftime('%d.%m.%Y ') }}{{ "%02d"|format(hour) }}:{{ dt.strftime('%M') }}
+    {% endif %}
+{% endmacro %}
+
+{% block title %}{{ post.title }} - GG Blog{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <article class="card">
+            <div class="card-body">
+                <h1 class="card-title">{{ post.title }}</h1>
+                <p class="text-muted">
+                    Автор: <a href="/profile/{{ post.author.username }}" class="text-decoration-none">
+                        {{ post.author.username }}
+                    </a>
+                    | Опубликовано: {{ moscow_time(post.created_at) }}
+                    {% if post.updated_at %}
+                    | Обновлено: {{ moscow_time(post.updated_at) }}
+                    {% endif %}
+                </p>
+
+                {% if post.tags %}
+                <div class="mb-3">
+                    {% for tag in post.tags %}
+                    <a href="/tag/{{ tag.name }}" class="badge bg-primary text-decoration-none me-1">
+                        #{{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="reactions mb-3">
+                    <div class="btn-group" role="group">
+                        {% if current_user %}
+
+                            <form method="post" action="/posts/{{ post.id }}/like" class="d-inline">
+                                <button type="submit"
+                                        class="btn btn-outline-success {% if user_reaction == True %}active{% endif %}"
+                                        title="Лайк">
+                                    <i class="bi bi-hand-thumbs-up"></i> 👍
+                                    <span class="badge bg-success">{{ reactions.likes_count if reactions else 0 }}</span>
+                                </button>
+                            </form>
+
+                            <form method="post" action="/posts/{{ post.id }}/dislike" class="d-inline">
+                                <button type="submit"
+                                        class="btn btn-outline-danger {% if user_reaction == False %}active{% endif %}"
+                                        title="Дизлайк">
+                                    <i class="bi bi-hand-thumbs-down"></i> 👎
+                                    <span class="badge bg-danger">{{ reactions.dislikes_count if reactions else 0 }}</span>
+                                </button>
+                            </form>
+
+                            {% if user_reaction is not none %}
+                            <form method="post" action="/posts/{{ post.id }}/remove-reaction" class="d-inline">
+                                <button type="submit" class="btn btn-outline-secondary" title="Убрать реакцию">
+                                    <i class="bi bi-x-circle"></i> Убрать
+                                </button>
+                            </form>
+                            {% endif %}
+                        {% else %}
+
+                            <button type="button" class="btn btn-outline-secondary" disabled>
+                                <i class="bi bi-hand-thumbs-up"></i> 👍
+                                <span class="badge bg-secondary">{{ reactions.likes_count if reactions else 0 }}</span>
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" disabled>
+                                <i class="bi bi-hand-thumbs-down"></i> 👎
+                                <span class="badge bg-secondary">{{ reactions.dislikes_count if reactions else 0 }}</span>
+                            </button>
+                            <small class="text-muted ms-2 align-self-center">
+                                <a href="/login">Войдите</a>, чтобы оценить пост
+                            </small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <hr>
+
+                {% if post.image_filename %}
+                <div class="mb-4 text-center">
+                    <img src="/static/uploads/{{ post.image_filename }}"
+                         class="img-fluid rounded"
+                         alt="{{ post.title }}"
+                         style="max-height: 500px; object-fit: contain;">
+                    <p class="text-muted mt-2 small">Изображение к посту</p>
+                </div>
+                {% endif %}
+
+                <div class="post-content">
+                    {{ post.content|safe }}
+                </div>
+
+                {% if current_user and post.author_id == current_user.id %}
+                <div class="mt-4">
+                    <div class="btn-group">
+                        <a href="/posts/{{ post.id }}/edit" class="btn btn-warning">
+                            <i class="bi bi-pencil"></i> Редактировать
+                        </a>
+                        <form method="post" action="/posts/{{ post.id }}/delete" class="d-inline">
+                            <button type="submit" class="btn btn-danger ms-2"
+                                    onclick="return confirm('Удалить пост?')">
+                                <i class="bi bi-trash"></i> Удалить
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </article>
+
+        <div class="card mt-4">
+            <div class="card-body">
+                <h5 class="card-title">Комментарии ({{ comments|length }})</h5>
+
+                {% if current_user %}
+                <form method="post" action="/posts/{{ post.id }}/comments/" class="mb-4">
+                    <div class="mb-3">
+                        <textarea name="content" class="form-control" rows="3"
+                                  placeholder="Напишите комментарий..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-send"></i> Отправить комментарий
+                    </button>
+                </form>
+                {% else %}
+                <div class="alert alert-info">
+                    <a href="/login">Войдите</a>, чтобы оставить комментарий
+                </div>
+                {% endif %}
+
+                <hr>
+
+                {% if comments %}
+                <div class="comments-list">
+                    {% for comment in comments %}
+                    <div class="comment mb-3 pb-3 {% if not loop.last %}border-bottom{% endif %}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong class="d-block">
+                                    <a href="/profile/{{ comment.author.username }}" class="text-decoration-none">
+                                        {{ comment.author.username }}
+                                    </a>
+                                </strong>
+                                <small class="text-muted">
+                                    {{ moscow_time(comment.created_at) }}
+                                    {% if comment.updated_at and comment.updated_at != comment.created_at %}
+                                    (ред. {{ moscow_time(comment.updated_at) }})
+                                    {% endif %}
+                                </small>
+                            </div>
+
+                            {% if current_user and comment.author_id == current_user.id %}
+                            <form method="post"
+                                  action="/posts/{{ post.id }}/comments/{{ comment.id }}/delete"
+                                  class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger"
+                                        onclick="return confirm('Удалить комментарий?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                            {% endif %}
+                        </div>
+                        <p class="mt-2 mb-0">{{ comment.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center">Пока нет комментариев. Будьте первым!</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="/" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Назад к списку
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

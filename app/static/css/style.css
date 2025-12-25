@@ -1,0 +1,19 @@
+[href*="/profile/"] {
+    color: #0d6efd;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a[href*="/profile/"]:hover {
+    color: #0a58ca;
+    text-decoration: underline;
+}
+
+.card .author-link {
+    font-weight: 500;
+    color: #495057;
+}
+
+.card .author-link:hover {
+    color: #0d6efd;
+}

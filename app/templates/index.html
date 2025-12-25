@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+
+{% block title %}Главная - GG Blog{% endblock %}
+
+{% block content %}
+{% macro moscow_time(dt) %}
+    {% if dt %}
+        {% set hour = dt.hour + 3 %}
+        {% if hour >= 24 %}
+            {% set hour = hour - 24 %}
+        {% endif %}
+        {{ dt.strftime('%d.%m.%Y ') }}{{ "%02d"|format(hour) }}:{{ dt.strftime('%M') }}
+    {% endif %}
+{% endmacro %}
+
+<div class="row">
+    <div class="col-md-8">
+        <h1 class="mb-4">Последние посты</h1>
+
+        {% if posts %}
+            {% for post in posts %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <a href="/posts/{{ post.id }}" class="text-decoration-none">{{ post.title }}</a>
+                    </h5>
+                    <p class="card-text">{{ post.content[:200] }}{% if post.content|length > 200 %}...{% endif %}</p>
+                    <p class="card-text">
+                        <small class="text-muted">
+                            Автор: <a href="/profile/{{ post.author.username }}" class="text-muted">{{ post.author.username }}</a> |
+                            Опубликовано: {{ moscow_time(post.created_at) }}
+                        </small>
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="alert alert-info">
+                Пока нет ни одного поста.
+                {% if current_user %}
+                    <a href="/posts/create" class="alert-link">Создайте первый!</a>
+                {% else %}
+                    <a href="/register" class="alert-link">Зарегистрируйтесь</a> чтобы создать первый пост!
+                {% endif %}
+            </div>
+        {% endif %}
+
+        {% if total_pages > 1 %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page > 1 %}
+                <li class="page-item">
+                    <a class="page-link" href="/?page={{ page-1 }}&per_page={{ per_page }}">Назад</a>
+                </li>
+                {% endif %}
+
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == page %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ p }}</span>
+                    </li>
+                    {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="/?page={{ p }}&per_page={{ per_page }}">{{ p }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page < total_pages %}
+                <li class="page-item">
+                    <a class="page-link" href="/?page={{ page+1 }}&per_page={{ per_page }}">Вперед</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Статистика</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Постов:</span>
+                        <span class="badge bg-primary rounded-pill">{{ post_count }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                        <span>Пользователей:</span>
+                        <span class="badge bg-primary rounded-pill">{{ user_count }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Действия</h5>
+                <div class="d-grid gap-2">
+                    {% if current_user %}
+                        <a href="/posts/create" class="btn btn-primary">Создать пост</a>
+                        <a href="/logout" class="btn btn-outline-danger">Выйти</a>
+                    {% else %}
+                        <a href="/register" class="btn btn-outline-primary">Регистрация</a>
+                        <a href="/login" class="btn btn-outline-secondary">Вход</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
