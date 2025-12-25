@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация - GG-BLOG{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <h2 class="mb-4">Регистрация</h2>
+
+        {% if errors %}
+        <div class="alert alert-danger">
+            <ul class="mb-0">
+                {% for error in errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <form method="post" action="/register">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email"
+                       value="{{ email or '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Имя пользователя</label>
+                <input type="text" class="form-control" id="username" name="username"
+                       value="{{ username or '' }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Подтвердите пароль</label>
+                <input type="password" class="form-control" id="confirm_password"
+                       name="confirm_password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Зарегистрироваться</button>
+            <a href="/login" class="btn btn-link">Уже есть аккаунт? Войти</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

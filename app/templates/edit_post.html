@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}Редактировать пост - GG Blog{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h2 class="mb-4">Редактировать пост</h2>
+
+        {% if post.image_filename %}
+        <div class="mb-3">
+            <p>Текущее изображение:</p>
+            <img src="/static/uploads/{{ post.image_filename }}"
+                 class="img-thumbnail"
+                 alt="{{ post.title }}"
+                 style="max-height: 200px;">
+        </div>
+        {% endif %}
+
+        <form method="post" action="/posts/{{ post.id }}/edit" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="title" class="form-label">Заголовок</label>
+                <input type="text" class="form-control" id="title" name="title"
+                       value="{{ post.title }}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="content" class="form-label">Содержание</label>
+                <textarea class="form-control" id="content" name="content"
+                          rows="10" required>{{ post.content }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="image" class="form-label">Новое изображение (оставьте пустым, чтобы не менять)</label>
+                <input type="file" class="form-control" id="image" name="image" accept=".jpg,.jpeg,.png,.gif">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="/posts/{{ post.id }}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
