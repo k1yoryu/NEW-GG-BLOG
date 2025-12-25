@@ -97,7 +97,7 @@
                 {% endif %}
 
                 <div class="post-content">
-                    {{ post.content|safe }}
+                {{ post.content|replace("\n", "<br>")|safe }}
                 </div>
 
                 {% if current_user and post.author_id == current_user.id %}
